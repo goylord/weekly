@@ -33,7 +33,7 @@ def setStyle(name = 'SimSun', height = 250, bold = False, horz = xlwt.Alignment.
 def weeklyGenerator(gitDataMap):
     workbook = xlwt.Workbook(encoding = 'utf-8')
     worksheet = workbook.add_sheet('工作周报')
-    worksheet.write_merge(0, 2, 0, 2, '姓名：任根胜\n岗位：前端工程师', setStyle())
+    worksheet.write_merge(0, 2, 0, 2, '姓名：' + authorName + '\n岗位：前端工程师', setStyle())
     worksheet.write(3, 0, '日期', setStyle(horz = xlwt.Alignment.HORZ_CENTER))
     worksheet.write(3, 1, '工作内容', setStyle(horz = xlwt.Alignment.HORZ_CENTER))
     worksheet.write(3, 2, '完成度', setStyle(horz = xlwt.Alignment.HORZ_CENTER))
@@ -41,9 +41,9 @@ def weeklyGenerator(gitDataMap):
     worksheet.col(1).width = 17000
     worksheet.col(2).width = 8000
     startRow = 4
-    for key, value in gitDataMapping.items():
-        worksheet.write_merge(startRow, startRow + len(value) - 1, 0, 0, key, setStyle(horz = xlwt.Alignment.HORZ_CENTER))
-        for workContent in value:
+    for key in sorted(gitDataMap.keys()):
+        worksheet.write_merge(startRow, startRow + len(gitDataMap[key]) - 1, 0, 0, key, setStyle(horz = xlwt.Alignment.HORZ_CENTER))
+        for workContent in gitDataMap[key]:
             worksheet.write(startRow, 1, workContent, setStyle())
             worksheet.write(startRow, 2, '100%', setStyle(horz = xlwt.Alignment.HORZ_CENTER))
             startRow += 1
