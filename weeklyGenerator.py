@@ -48,8 +48,9 @@ def weeklyGenerator(gitDataMap):
             worksheet.write(startRow, 2, '100%', setStyle(horz = xlwt.Alignment.HORZ_CENTER))
             startRow += 1
     print ('保存周报')
-    workbook.save('test.xls')
+    workbook.save(authorName + '工作周报-' + startTime  + '-' + endTime + '.xls')
 if __name__ == '__main__':
+    print ('开始遍历文件夹， 项目过多时间可能较长, 请耐心等待...')
     currentPath = os.getcwd()
     currentPathDep = len(currentPath.split(os.path.sep))
     gitFolderList = []
