@@ -52,23 +52,14 @@ def weeklyGenerator(gitDataMap):
 if __name__ == '__main__':
     print ('开始遍历文件夹， 项目过多时间可能较长, 请耐心等待...')
     currentPath = os.getcwd()
-    currentPathDep = len(currentPath.split(os.path.sep))
     gitFolderList = []
     gitFolderNames = []
     gitLogMapping = {}
     gitDataMapping = {}
     gitShell = 'git log --since=' + startTime + ' --until=' + endTime + ' --author=' + authorName + ' --date=format:"%Y-%m-%d" --pretty=format:"%cd:::::%s";'
-    for root, dirs, files in os.walk(currentPath):
-        for name in dirs:
-            childPath = os.path.join(root, name)
-            childPathDep = len(childPath.split(os.path.sep))
-            if childPathDep > currentPathDep + 0 and childPathDep <= currentPathDep + 2 :
-                if childPathDep == currentPathDep + 2 :
-                    if  ('.git' in dirs):
-                        gitFolderList.append(root)
-                    break
-            else:
-                break
+    for dir in os.listdir(currentPath):
+        if os.path.exists(dir + os.path.sep + '.git'):
+            gitFolderList.append(currentPath + os.path.sep + dir)
     for filePath in gitFolderList:
         fileName = raw_input('Please input the project name of [' + filePath + '])(Just enter and skip this project):')
         if fileName == '':
