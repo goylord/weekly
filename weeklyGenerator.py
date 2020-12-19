@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 import xlwt
 import os
+import datetime
 # 设置单元格样式
-startTime = '2020-05-10'
-endTime = '2020-12-19'
-authorName = '任根胜'
+startTime = '2020-01-01'
+endTime = '2020-12-31'
+authorName = 'RenGS'
 def setStyle(name = 'SimSun', height = 250, bold = False, horz = xlwt.Alignment.HORZ_LEFT, vert = xlwt.Alignment.VERT_CENTER, border_style = xlwt.Borders.THIN, border_color = 0x40):
     style = xlwt.XFStyle()
     font = xlwt.Font()
@@ -29,7 +30,12 @@ def setStyle(name = 'SimSun', height = 250, bold = False, horz = xlwt.Alignment.
     borders.bottom_colour = border_color
     style.borders = borders
     return style
-
+def getCurrentWeek():
+    monday, today = datetime.date.today(), datetime.date.today()
+    one_day = datetime.timedelta(days=1)
+    while monday.weekday() != 0:
+        monday -= one_day
+    return monday, today
 def weeklyGenerator(gitDataMap):
     workbook = xlwt.Workbook(encoding = 'utf-8')
     worksheet = workbook.add_sheet('工作周报')
@@ -76,6 +82,14 @@ if __name__ == '__main__':
                     gitFolderNames.append(keyValue[1])
     else:
         menuIndex = '2'
+    startTime = raw_input("生成周报提交开始时间（默认周一）：")
+    endTime = raw_input("生成周报提交结束时间（默认当天）：")
+    currentMonday, currentFriday = getCurrentWeek()
+    if startTime == '':
+        startTime = currentMonday.strftime('%Y-%m-%d')
+    if endTime == '':
+        endTime = currentFriday.strftime('%Y-%m-%d')
+    authorName = raw_input("人员姓名（默认为空）：")
     gitShell = 'git log --since=' + startTime + ' --until=' + endTime + ' --author=' + authorName + ' --date=format:"%Y-%m-%d" --pretty=format:"%cd:::::%s";'
     if menuIndex == '2' or menuIndex == '3':
         for dir in os.listdir(currentPath):
