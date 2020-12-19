@@ -2,8 +2,8 @@
 import xlwt
 import os
 # 设置单元格样式
-startTime = '2020-05-21'
-endTime = '2020-10-20'
+startTime = '2020-05-10'
+endTime = '2020-12-19'
 authorName = '任根胜'
 def setStyle(name = 'SimSun', height = 250, bold = False, horz = xlwt.Alignment.HORZ_LEFT, vert = xlwt.Alignment.VERT_CENTER, border_style = xlwt.Borders.THIN, border_color = 0x40):
     style = xlwt.XFStyle()
@@ -50,22 +50,52 @@ def weeklyGenerator(gitDataMap):
     print ('保存周报')
     workbook.save(authorName + '工作周报-' + startTime  + '-' + endTime + '.xls')
 if __name__ == '__main__':
-    print ('开始遍历文件夹， 项目过多时间可能较长, 请耐心等待...')
     currentPath = os.getcwd()
+    tmpDataMapping = {}
     gitFolderList = []
     gitFolderNames = []
     gitLogMapping = {}
     gitDataMapping = {}
+    menuIndex = '1'
+    if os.path.exists(currentPath + os.path.sep + '.tmp.txt'):
+        # 如果存在缓存文件
+        print("1. 使用缓存中的项目名称\n")
+        print("2. 重新获取项目名称\n")
+        print("3. 扫描添加新项目\n")
+        menuIndex = raw_input("请输入选项（默认为1）：")
+        if (menuIndex == '1' or menuIndex == '3'):
+            tmpFileOpen = open(currentPath + os.path.sep + '.tmp.txt')
+            tmpFile = tmpFileOpen.read()
+            tmpFileOpen.close()
+            tmpFileArrays = tmpFile.split(':::::::')
+            for tmpFileLine in tmpFileArrays:
+                keyValue = tmpFileLine.split('&&&&&&&&&&&&&&&&&&')
+                if len(keyValue) is 2:
+                    tmpDataMapping[keyValue[0]] = keyValue[1]
+                    gitFolderList.append(keyValue[0])
+                    gitFolderNames.append(keyValue[1])
+    else:
+        menuIndex = '2'
     gitShell = 'git log --since=' + startTime + ' --until=' + endTime + ' --author=' + authorName + ' --date=format:"%Y-%m-%d" --pretty=format:"%cd:::::%s";'
-    for dir in os.listdir(currentPath):
-        if os.path.exists(dir + os.path.sep + '.git'):
-            gitFolderList.append(currentPath + os.path.sep + dir)
-    for filePath in gitFolderList:
-        fileName = raw_input('Please input the project name of [' + filePath + '])(Just enter and skip this project):')
-        if fileName == '':
+    if menuIndex == '2' or menuIndex == '3':
+        for dir in os.listdir(currentPath):
+            if os.path.exists(dir + os.path.sep + '.git'):
+                childProjectPath = currentPath + os.path.sep + dir
+                if menuIndex == '2' or (menuIndex == '3' and (childProjectPath not in gitFolderList)):
+                    gitFolderList.append(childProjectPath)
+    for folderIdx, filePath in enumerate(gitFolderList):
+        fileName = ''
+        if menuIndex == '2':
+            fileName = raw_input('Please input the project name of [' + filePath + '])(Just enter and skip this project):')
+        elif menuIndex == '3' and not tmpDataMapping.has_key(filePath):
+            fileName = raw_input('Please input the project name of [' + filePath + '])(Just enter and skip this project):')
+        if fileName == '' and (menuIndex == '2' or menuIndex == '3' and not tmpDataMapping.has_key(filePath)):
             gitFolderNames.append('None')
         else:
-            gitFolderNames.append(fileName)
+            if menuIndex == '2' or (menuIndex == '3' and not tmpDataMapping.has_key(filePath)):
+                gitFolderNames.append(fileName)
+            else:
+                fileName = gitFolderNames[folderIdx]
             # 开始获取项目的提交信息
             os.chdir(filePath)
             result = os.popen(gitShell)
@@ -78,6 +108,18 @@ if __name__ == '__main__':
                 gitDataMapping[gitLogItem[0]] = []
             gitDataMapping[gitLogItem[0]].append("(" +  key + ")" + gitLogItem[1].replace("fix:", "").replace("feat:", ""))
 
-    print('开始格式化周报')
+    print('开始生成周报...')
     os.chdir(currentPath)
     weeklyGenerator(gitDataMapping)
+    if menuIndex != '1':
+        print('保存成功, 开始生成缓存文件...')
+        tmpTxt = ''
+        for inx, projectName in enumerate(gitFolderNames):
+            if projectName != 'None':
+                tmpTxt += gitFolderList[inx] + '&&&&&&&&&&&&&&&&&&' + projectName
+                if inx != len(gitFolderNames) - 1:
+                    tmpTxt += ':::::::'
+        file = open(currentPath + os.path.sep + '.tmp.txt', mode='w')
+        file.write(tmpTxt)
+        file.close()
+        print('缓存成功, 程序退出\n')
