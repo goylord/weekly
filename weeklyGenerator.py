@@ -35,6 +35,7 @@ def getCurrentWeek():
     one_day = datetime.timedelta(days=1)
     while monday.weekday() != 0:
         monday -= one_day
+    monday -= one_day
     return monday, today
 def weeklyGenerator(gitDataMap):
     workbook = xlwt.Workbook(encoding = 'utf-8')
